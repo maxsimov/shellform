@@ -95,6 +95,14 @@ shellform_configure() {
 
   shellform_service_options=($($spec_func))
 
+  # 🔹 One-time init per service
+  local init_fn="${shellform_current_service}_init"
+  local inited_var="shellform_service_${shellform_current_service}_inited"
+  if declare -f "$init_fn" >/dev/null && [[ -z "${!inited_var:-}" ]]; then
+    "$init_fn"
+    printf -v "$inited_var" 1
+  fi
+
   for option in "${shellform_service_options[@]}"; do
     shellform_define_option_function "$option"
   done
