@@ -24,7 +24,7 @@ shellform_start_time=$(date +%s)
 shellform_max_args=10
 
 ##########################################################################
-# Logging & Error Reporting
+# Logging &  rror Reporting
 ##########################################################################
 
 shellform_log_dir="./logs"
@@ -39,7 +39,13 @@ shellform_fatal() {
   exit 1
 }
 
-trap 'shellform_fatal "Command failed: $BASH_COMMAND"' ERR
+
+shellform_exec() {
+  if [[ "${shellform_dryrun:-0}" -eq 1 ]]; then
+    return 0
+  fi
+  "$@"
+}
 
 shellform_run() {
   local cmd="$1"
@@ -50,13 +56,23 @@ shellform_run() {
 
   shellform_command_count=$((shellform_command_count + 1))
   echo -e "▶️  $cmd ${visible_args[*]}"
-  if "$cmd" "${args[@]}"; then
+  if shellform_exec "$cmd" "${args[@]}"; then
     echo -e "✅ Success: $cmd ${visible_args[*]}"
   else
     echo -e "❌ Failed: $cmd ${visible_args[*]}"
     shellform_error_count=$((shellform_error_count + 1))
     return 1
   fi
+}
+
+shellform_dump_call_trace() {
+  local ERROR_CMD=$(eval echo "$BASH_COMMAND")
+  echo "🚨 ERROR: Command \"$ERROR_CMD\" failed."
+  echo "🚨 Call trace:"
+  local i=1
+  while caller $i; do
+    ((i++))
+  done
 }
 
 ##########################################################################
@@ -144,4 +160,5 @@ shellform_summary() {
   echo "  Log File:     $shellform_log_file"
 }
 
+trap shellform_dump_call_trace ERR
 trap shellform_summary EXIT
