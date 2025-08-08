@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 # shellform.sh
 
-set -euo pipefail
-set -o errtrace
+if [[ -n "${SHELLFORM_LOADED:-}" ]]; then
+  shellform_init
+  return
+fi
+SHELLFORM_LOADED=1
+
 
 ##########################################################################
 # Public DSL API
@@ -24,7 +28,7 @@ shellform_start_time=$(date +%s)
 shellform_max_args=10
 
 ##########################################################################
-# Logging &  rror Reporting
+# Logging & Error Reporting
 ##########################################################################
 
 shellform_log_dir="./logs"
@@ -168,5 +172,11 @@ shellform_summary() {
   echo "  Log File:     $shellform_log_file"
 }
 
-trap shellform_dump_call_trace ERR
-trap shellform_summary EXIT
+shellform_init() {
+ trap shellform_dump_call_trace ERR
+ trap shellform_summary EXIT
+ set -euo pipefail
+ set -o errtrace
+}
+
+shellform_init
