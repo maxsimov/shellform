@@ -12,7 +12,7 @@ uv_init() {
 
 # Configure: both args required
 # Usage: uv_venv <venv_path> <python_xy>
-uv_venv() {
+uv_venv_item() {
   local path="${1:-}"
   local py="${2:-}"   # X.Y
 
