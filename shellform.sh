@@ -51,6 +51,10 @@ shellform_exec() {
   "$@"
 }
 
+shellform_cmd() {
+    "$@"
+}
+
 shellform_run() {
   local cmd="$1"
   shift
