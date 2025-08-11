@@ -28,8 +28,6 @@ _uv_ensure_venv_min() {
   local venv_path="${_sf_uv_path}"
   local xy="${_sf_uv_py}"
 
-  [[ -n "$venv_path" && -n "$xy" ]] || shellform_fatal "_uv_ensure_venv_min: call uv_venv first"
-
   if [[ ! -d "$venv_path" ]]; then
     shellform_run uv venv --python="python${xy}" "$venv_path"
   fi
@@ -39,11 +37,6 @@ _uv_ensure_venv_min() {
   elif [[ -x "$venv_path/Scripts/activate" ]]; then # Windows
     ensure_shell_env PATH "$venv_path/Scripts"
   fi
-}
-
-# Group phases
-uv_venv_group() {
-  _uv_ensure_venv_min
 }
 
 uv_install_group() {
