@@ -31,12 +31,6 @@ _uv_ensure_venv_min() {
   if [[ ! -d "$venv_path" ]]; then
     shellform_run uv venv --python="python${xy}" "$venv_path"
   fi
-
-  if [[ -x "$venv_path/bin/activate" ]]; then
-    ensure_shell_env PATH "$venv_path/bin"
-  elif [[ -x "$venv_path/Scripts/activate" ]]; then # Windows
-    ensure_shell_env PATH "$venv_path/Scripts"
-  fi
 }
 
 uv_install_group() {
