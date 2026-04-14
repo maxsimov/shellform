@@ -107,8 +107,9 @@ shellform_configure() {
   local init_fn="${shellform_current_service}_init"
   local inited_var="shellform_service_${shellform_current_service}_inited"
   if declare -f "$init_fn" >/dev/null && [[ -z "${!inited_var:-}" ]]; then
-    if ! "$init_fn"; then
-      local init_rc=$?
+    local init_rc=0
+    "$init_fn" || init_rc=$?
+    if [[ $init_rc -ne 0 ]]; then
       echo ""
       echo "════════════════════════════════════════════════════════════"
       echo "❌ PROVIDER INIT FAILED: $shellform_current_service (exit $init_rc)"
