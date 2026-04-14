@@ -107,7 +107,19 @@ shellform_configure() {
   local init_fn="${shellform_current_service}_init"
   local inited_var="shellform_service_${shellform_current_service}_inited"
   if declare -f "$init_fn" >/dev/null && [[ -z "${!inited_var:-}" ]]; then
-    "$init_fn"
+    if ! "$init_fn"; then
+      local init_rc=$?
+      echo ""
+      echo "════════════════════════════════════════════════════════════"
+      echo "❌ PROVIDER INIT FAILED: $shellform_current_service (exit $init_rc)"
+      echo "════════════════════════════════════════════════════════════"
+      echo "The 'configure $shellform_current_service ... end' block cannot run."
+      echo "Fix the provider's prerequisites and re-run the script."
+      echo "════════════════════════════════════════════════════════════"
+      echo ""
+      shellform_error_count=$((shellform_error_count + 1))
+      exit $init_rc
+    fi
     printf -v "$inited_var" 1
   fi
 
