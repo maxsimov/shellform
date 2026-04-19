@@ -163,8 +163,13 @@ shellform_end() {
     local group_fn="${shellform_current_service}_${option}_group"
     if declare -f "$group_fn" >/dev/null && [[ "$(declare -p "$var" 2>/dev/null)" =~ "declare -a" ]]; then
       local args
-      eval "args=(\"\${$var[@]}\")"
-      "$group_fn" "${args[@]}"
+      eval "args=(\"\${$var[@]:-}\")"
+      # Skip the group call when no items were registered for this option
+      if [[ ${#args[@]} -eq 0 || ( ${#args[@]} -eq 1 && -z "${args[0]}" ) ]]; then
+        :
+      else
+        "$group_fn" "${args[@]}"
+      fi
     fi
     unset -f "$option"
     unset "$var"
