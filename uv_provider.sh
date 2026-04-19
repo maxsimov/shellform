@@ -36,5 +36,5 @@ _uv_ensure_venv_min() {
 uv_install_group() {
   _uv_ensure_venv_min
   [[ $# -gt 0 ]] || return 0
-  shellform_run uv pip install "$@"
+  shellform_run env VIRTUAL_ENV="$_sf_uv_path" uv pip install "$@"
 }
