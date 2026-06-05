@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# files_provider.sh — copy tracked files into system paths when changed
+# files_provider.sh — copy or symlink tracked files into system paths when changed
 
-files_spec() { echo "copy"; }
+files_spec() { echo "copy link"; }
 
 # Expand ~ to $HOME
 _files_expand() {
@@ -66,6 +66,41 @@ files_copy_item() {
   else
     shellform_run cp -f -- "$src" "$dest"
     echo "UPDATED $dest"
+  fi
+}
+
+# Immediate action for each link item — symlink dest -> src (replaces any
+# existing file/symlink). Unlike copy, edits to dest write through to the
+# tracked src, so the file stays in sync with the repo.
+files_link_item() {
+  local src_raw="$1"
+  local dest_raw="$2"
+
+  if [[ -z "${src_raw:-}" || -z "${dest_raw:-}" ]]; then
+    shellform_fatal "link requires: link <src> <dest>"
+    return 1
+  fi
+
+  local src="$(_files_resolve_src "$src_raw")"
+  local dest="$(_files_resolve_dest "$dest_raw")"
+
+  # validate source (file or dir)
+  if [[ ! -e "$src" ]]; then
+    shellform_fatal "source not found: $src"
+    return 1
+  fi
+
+  # create destination directory
+  local parent
+  parent="$(dirname -- "$dest")"
+  shellform_run mkdir -p -- "$parent"
+
+  # link only if needed
+  if [[ -L "$dest" && "$(readlink -- "$dest")" == "$src" ]]; then
+    echo "OK      $dest (no change)"
+  else
+    shellform_run ln -sfn -- "$src" "$dest"
+    echo "UPDATED $dest -> $src"
   fi
 }
 
