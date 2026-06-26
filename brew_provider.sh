@@ -28,6 +28,13 @@ brew_init() {
 
 brew_tap_group() {
   shellform_run brew tap "$@"
+  # Homebrew refuses to load formulae from an untrusted third-party tap, so a
+  # bare `brew tap` leaves `install` failing. Trust each tap we add — declaring
+  # a tap in the DSL is the statement of intent to use it.
+  local _tap
+  for _tap in "$@"; do
+    shellform_run brew trust "$_tap"
+  done
 }
 
 brew_install_group() {
